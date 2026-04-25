@@ -1,0 +1,50 @@
+# GalletasApp — Instrucciones de instalación
+
+## Opción 1: Instalar directamente en Android (recomendado)
+
+### Paso 1 — Subir los archivos a un servidor
+Necesitás que los archivos estén en un servidor HTTPS. Las opciones más fáciles y gratuitas:
+
+**Opción A — GitHub Pages (gratis, permanente)**
+1. Creá una cuenta en https://github.com
+2. Creá un repositorio nuevo llamado `galletasapp`
+3. Subí todos los archivos (index.html, manifest.json, sw.js, carpeta icons/)
+4. Andá a Settings → Pages → Branch: main → Save
+5. Tu app estará en: https://TU_USUARIO.github.io/galletasapp
+
+**Opción B — Netlify Drop (gratis, más fácil)**
+1. Andá a https://app.netlify.com/drop
+2. Arrastrá la carpeta galletasapp/ completa
+3. Te da una URL instantánea tipo: https://nombre-random.netlify.app
+
+**Opción C — Servidor local en tu red WiFi**
+Si tenés Python instalado en tu PC:
+```bash
+cd galletasapp
+python3 -m http.server 8080
+```
+Luego en Android: abrí Chrome y entrá a http://IP_DE_TU_PC:8080
+
+### Paso 2 — Instalar en Android
+1. Abrí Chrome en tu celular Android
+2. Entrá a la URL de tu app
+3. Chrome mostrará un banner "Agregar a pantalla de inicio" — tocalo
+4. O bien: tocá los 3 puntos (⋮) → "Agregar a pantalla de inicio"
+5. La app se instala como si fuera nativa
+
+## Características de la app instalada
+- ✅ Funciona sin internet (modo offline completo)
+- ✅ Los datos se guardan permanentemente en el celular
+- ✅ Ícono en la pantalla de inicio
+- ✅ Sin barra del navegador (pantalla completa)
+- ✅ Los datos NO se pierden al cerrar la app
+
+## Backup de datos
+Desde la pestaña "Exportar" podés descargar todos tus datos en CSV
+para tener una copia de seguridad o abrirlos en Excel.
+
+## Archivos incluidos
+- index.html      — La aplicación completa
+- manifest.json   — Configuración de la PWA
+- sw.js           — Service worker (modo offline)
+- icons/          — Íconos de la aplicación
