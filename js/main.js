@@ -167,38 +167,43 @@ function guardarPrecios() {
 
 // ===================== PEDIDOS =====================
 function onPresChange() {
+  var cant = parseInt(document.getElementById('ped-cant').value) || 1;
   var pres = parseInt(document.getElementById('ped-pres').value);
+  var target = cant * pres;
   var wrap = document.getElementById('mix-wrap');
-  if (pres > 1) {
-    wrap.style.display = 'block';
-    var t = Math.floor(pres / 3), r = pres - t - t;
-    mixValues = { chips: t, oreo: t, limon: r };
-    updateMixUI();
-  } else {
-    wrap.style.display = 'none';
+  wrap.style.display = 'block';
+  if (target === 1) {
     mixValues = { chips: 1, oreo: 0, limon: 0 };
+  } else {
+    var t = Math.floor(target / 3), r = target - t - t;
+    mixValues = { chips: t, oreo: t, limon: r };
   }
+  updateMixUI();
 }
 
 function adjMix(v, delta) {
+  var cant = parseInt(document.getElementById('ped-cant').value) || 1;
   var pres = parseInt(document.getElementById('ped-pres').value);
+  var target = cant * pres;
   mixValues[v] = Math.max(0, mixValues[v] + delta);
-  var total = mixValues.chips + mixValues.oreo + mixValues.limon;
-  if (total > pres) { mixValues[v] -= delta; }
+  var current = mixValues.chips + mixValues.oreo + mixValues.limon;
+  if (current > target) { mixValues[v] -= delta; }
   updateMixUI();
 }
 
 function updateMixUI() {
+  var cant = parseInt(document.getElementById('ped-cant').value) || 1;
   var pres = parseInt(document.getElementById('ped-pres').value);
+  var target = cant * pres;
   document.getElementById('mx-chips').textContent = mixValues.chips;
   document.getElementById('mx-oreo').textContent = mixValues.oreo;
   document.getElementById('mx-limon').textContent = mixValues.limon;
-  var total = mixValues.chips + mixValues.oreo + mixValues.limon;
+  var current = mixValues.chips + mixValues.oreo + mixValues.limon;
   var st = document.getElementById('mix-status');
-  if (total === pres) {
-    st.innerHTML = '<span class="mix-ok">✓ ' + total + '/' + pres + ' — listo</span>';
+  if (current === target) {
+    st.innerHTML = '<span class="mix-ok">✓ ' + current + '/' + target + ' — listo</span>';
   } else {
-    st.innerHTML = '<span class="mix-err">Faltan ' + (pres - total) + ' galleta' + ((pres-total)>1?'s':'') + '</span>';
+    st.innerHTML = '<span class="mix-err">Faltan ' + (target - current) + ' galleta' + ((target-current)>1?'s':'') + '</span>';
   }
 }
 
@@ -210,19 +215,16 @@ function addPedido() {
   var notas = document.getElementById('ped-notas').value.trim();
   if (!cl) { showToast('Ingresá el nombre del cliente'); return; }
   var mix = Object.assign({}, mixValues);
-  if (pres === 1) mix = { chips: 1, oreo: 0, limon: 0 };
-  if (pres > 1) {
-    var total = mix.chips + mix.oreo + mix.limon;
-    if (total !== pres) { showToast('Las variedades deben sumar ' + pres); return; }
-  }
+  var total = mix.chips + mix.oreo + mix.limon;
+  if (total !== (cant * pres)) { showToast('Las variedades deben sumar ' + (cant * pres)); return; }
+
   state.pedidos.unshift({ id: state.pedidoIdx++, cliente: cl, cantidad: cant, pres: pres, mix: mix, fecha: fecha, notas: notas, estado: 'pendiente' });
   saveState();
   ['ped-cliente','ped-notas'].forEach(function(id){ document.getElementById(id).value = ''; });
   document.getElementById('ped-cant').value = '1';
   document.getElementById('ped-pres').value = '1';
-  document.getElementById('mix-wrap').style.display = 'none';
   document.getElementById('ped-fecha').value = today();
-  mixValues = { chips: 0, oreo: 0, limon: 0 };
+  onPresChange();
   toggleForm('form-ped');
   renderAll(); showToast('Pedido registrado ✓');
 }
@@ -254,7 +256,7 @@ function eliminarPedido(id) {
 
 function calcCostoMix(mix, cantidad) {
   var c = 0;
-  VARS.forEach(function(v) { c += costoVariedad(v.id) * (mix[v.id] || 0) * cantidad; });
+  VARS.forEach(function(v) { c += costoVariedad(v.id) * (mix[v.id] || 0); });
   return c;
 }
 
@@ -295,7 +297,7 @@ function renderPedidos() {
 function renderCompras() {
   var pends = state.pedidos.filter(function(p){ return p.estado !== 'entregado'; });
   var vc = { chips:0, oreo:0, limon:0 };
-  pends.forEach(function(p) { VARS.forEach(function(v){ vc[v.id] += (p.mix[v.id] || 0) * p.cantidad; }); });
+  pends.forEach(function(p) { VARS.forEach(function(v){ vc[v.id] += (p.mix[v.id] || 0); }); });
   var tg = vc.chips + vc.oreo + vc.limon;
 
   document.getElementById('comp-resumen').innerHTML =
@@ -365,7 +367,7 @@ function renderHistorial() {
     '<div class="metric"><div class="metric-label">Ventas</div><div class="metric-value">' + ventas.length + '</div></div>';
 
   var vc = { chips:0, oreo:0, limon:0 };
-  state.historial.forEach(function(v){ VARS.forEach(function(vr){ vc[vr.id] += (v.mix[vr.id]||0)*v.cantidad; }); });
+  state.historial.forEach(function(v){ VARS.forEach(function(vr){ vc[vr.id] += (v.mix[vr.id]||0); }); });
   var maxV = Math.max.apply(null, Object.values(vc)) || 1;
   document.getElementById('hist-chart').innerHTML = VARS.map(function(v) {
     var pct = Math.round(vc[v.id] / maxV * 100);
@@ -421,7 +423,7 @@ function exportCSV(tipo) {
     csv += 'ID,Cliente,Cantidad,Presentación,Total galletas,Chips,Oreo,Limón,Precio total,Fecha entrega,Notas,Estado\n';
     state.pedidos.forEach(function(p) {
       var pr = PRES.find(function(x){ return x.qty===p.pres; })||PRES[0];
-      csv += p.id+','+p.cliente+','+p.cantidad+','+pr.label+','+(p.cantidad*p.pres)+','+(p.mix.chips*p.cantidad)+','+(p.mix.oreo*p.cantidad)+','+(p.mix.limon*p.cantidad)+','+(p.cantidad*pr.precio)+','+p.fecha+','+(p.notas||'')+','+p.estado+'\n';
+      csv += p.id+','+p.cliente+','+p.cantidad+','+pr.label+','+(p.cantidad*p.pres)+','+p.mix.chips+','+p.mix.oreo+','+p.mix.limon+','+(p.cantidad*pr.precio)+','+p.fecha+','+(p.notas||'')+','+p.estado+'\n';
     });
     csv += '\n'; if (tipo==='pedidos') fn='pedidos.csv';
   }
@@ -432,7 +434,7 @@ function exportCSV(tipo) {
     state.historial.forEach(function(v) {
       var pr = PRES.find(function(x){ return x.qty===v.pres; })||PRES[0];
       var gan = Math.round(v.totalPrecio - v.totalCosto);
-      csv += v.id+','+v.cliente+','+v.cantidad+','+pr.label+','+v.totalGalletas+','+(v.mix.chips*v.cantidad)+','+(v.mix.oreo*v.cantidad)+','+(v.mix.limon*v.cantidad)+','+v.totalPrecio+','+Math.round(v.totalCosto)+','+gan+','+(v.notas||'')+','+v.fecha+'\n';
+      csv += v.id+','+v.cliente+','+v.cantidad+','+pr.label+','+v.totalGalletas+','+v.mix.chips+','+v.mix.oreo+','+v.mix.limon+','+v.totalPrecio+','+Math.round(v.totalCosto)+','+gan+','+(v.notas||'')+','+v.fecha+'\n';
     });
     csv += '\n'; if (tipo==='historial') fn='historial_ventas.csv';
   }
@@ -500,4 +502,5 @@ loadState();
 document.getElementById('ped-fecha').value = today();
 // Start at Pedidos screen
 showScreen('pedidos', document.getElementById('nav-pedidos'));
+onPresChange();
 renderAll();
