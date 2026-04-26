@@ -67,11 +67,25 @@ function showToast(msg) {
 }
 
 // ===================== SCREEN =====================
+function toggleMenu() {
+  document.getElementById('side-menu').classList.toggle('active');
+  document.getElementById('menu-overlay').classList.toggle('active');
+}
+
 function showScreen(name, btn) {
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
-  document.querySelectorAll('.nav button').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelectorAll('.nav button, .side-menu button').forEach(function(b){ b.classList.remove('active'); });
+  
   document.getElementById('screen-' + name).classList.add('active');
-  if (btn) btn.classList.add('active');
+  
+  // Activa el botón tanto en el nav como en el menú lateral
+  if (btn) {
+    btn.classList.add('active');
+    var navBtn = document.getElementById('nav-' + name);
+    if (navBtn) navBtn.classList.add('active');
+  }
+  
+  if (document.getElementById('side-menu').classList.contains('active')) toggleMenu();
   renderAll();
 }
 
@@ -203,10 +217,11 @@ function addPedido() {
   }
   state.pedidos.unshift({ id: state.pedidoIdx++, cliente: cl, cantidad: cant, pres: pres, mix: mix, fecha: fecha, notas: notas, estado: 'pendiente' });
   saveState();
-  ['ped-cliente','ped-fecha','ped-notas'].forEach(function(id){ document.getElementById(id).value = ''; });
+  ['ped-cliente','ped-notas'].forEach(function(id){ document.getElementById(id).value = ''; });
   document.getElementById('ped-cant').value = '1';
   document.getElementById('ped-pres').value = '1';
   document.getElementById('mix-wrap').style.display = 'none';
+  document.getElementById('ped-fecha').value = today();
   mixValues = { chips: 0, oreo: 0, limon: 0 };
   toggleForm('form-ped');
   renderAll(); showToast('Pedido registrado ✓');
@@ -481,4 +496,8 @@ if ('serviceWorker' in navigator) {
 
 // ===================== INIT =====================
 loadState();
+// Set default delivery date
+document.getElementById('ped-fecha').value = today();
+// Start at Pedidos screen
+showScreen('pedidos', document.getElementById('nav-pedidos'));
 renderAll();

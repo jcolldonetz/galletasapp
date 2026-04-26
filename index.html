@@ -12,26 +12,65 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>GalletasApp</title>
 <link rel="stylesheet" href="styles/main.css">
+<style>
+  /* Aumento global de fuentes (+2px) */
+  :root { font-size: 18px; }
+  body { font-size: 1rem; }
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.3rem; }
+  .btn { font-size: 1rem; }
+  .form-label { font-size: 0.9rem; }
+  
+  /* Estilos para el Menú Sandwich */
+  .menu-toggle { font-size: 1.5rem; cursor: pointer; padding: 5px 10px; }
+  .side-menu {
+    position: fixed; top: 0; left: -280px; width: 260px; height: 100%;
+    background: white; z-index: 1000; transition: 0.3s; 
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1); padding-top: 60px;
+  }
+  .side-menu.active { left: 0; }
+  .side-menu button {
+    display: block; width: 100%; text-align: left; padding: 15px 20px;
+    border: none; background: none; font-size: 1.1rem; color: var(--text1);
+    border-bottom: 1px solid var(--border);
+  }
+  .side-menu .active { color: var(--amber); font-weight: bold; background: var(--amber-bg); }
+  .menu-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4); display: none; z-index: 999;
+  }
+  .menu-overlay.active { display: block; }
+</style>
 </head>
 <body>
+
+  <div class="menu-overlay" id="menu-overlay" onclick="toggleMenu()"></div>
+  <div class="side-menu" id="side-menu">
+    <button onclick="showScreen('costos', this)">Costos</button>
+    <button onclick="showScreen('precios', this)">Precios</button>
+    <button onclick="showScreen('pedidos', this)">Pedidos</button>
+    <button onclick="showScreen('compras', this)">Compras</button>
+    <button onclick="showScreen('historial', this)">Historial</button>
+    <button onclick="showScreen('exportar', this)">Exportar</button>
+  </div>
+
 <div class="app">
   <!-- HEADER -->
   <div class="header">
-    <div class="logo">🍪</div>
+    <div style="display:flex; align-items:center; gap:10px">
+      <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+      <div class="logo">🍪</div>
+    </div>
     <div class="header-text">
       <h1>GalletasApp</h1>
-      <p>Chips · Oreo · Limón</p>
     </div>
   </div>
 
   <!-- NAV -->
   <nav class="nav">
-    <button class="active" onclick="showScreen('costos',this)">Costos</button>
-    <button onclick="showScreen('precios',this)">Precios</button>
-    <button onclick="showScreen('pedidos',this)">Pedidos</button>
-    <button onclick="showScreen('compras',this)">Compras</button>
-    <button onclick="showScreen('historial',this)">Historial</button>
-    <button onclick="showScreen('exportar',this)">Exportar</button>
+    <button id="nav-pedidos" class="active" onclick="showScreen('pedidos',this)">Pedidos</button>
+    <button id="nav-compras" onclick="showScreen('compras',this)">Compras</button>
+    <button id="nav-historial" onclick="showScreen('historial',this)">Historial</button>
   </nav>
 
   <!-- CONTENT -->
