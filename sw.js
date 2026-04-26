@@ -1,5 +1,5 @@
 var CACHE = 'galletasapp-v1';
-var FILES = ['./index.html', './manifest.json'];
+var FILES = ['./index.html', './manifest.json', './styles/main.css'];
 
 self.addEventListener('install', function(e) {
   e.waitUntil(
